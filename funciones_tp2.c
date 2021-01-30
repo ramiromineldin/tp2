@@ -37,7 +37,9 @@ doctor_t *crear_doctor(char **campos, void *extra) {
     return doctor;
 }
 
-especialidad_t *crear_especialidad(cmp_func_t comparar, char *nombre) {
+especialidad_t *crear_especialidad(cmp_func_t comparar, char *nombre, hash_t *especialidades) {
+    if (hash_pertenece(especialidades, nombre) return NULL;
+        
     especialidad_t *especialidad = malloc(sizeof(especialidad_t));
     if (!especialidad) return NULL;
     
