@@ -76,12 +76,11 @@ hash_t *guardar_pacientes(char *ruta_archivo) {
     return pacientes;
 }
 
-abb_t *guardar_doctores(char *ruta_archivo) {
+abb_t *guardar_doctores(char *ruta_archivo, hash_t *especialidades) {
     
     abb_t *doctores = abb_crear(strcmp, destruir_doctor);
     if (!doctores) return NULL;
 
-    hash_t *especialidades = hash_crear()
     lista_t *lista_doctores = csv_crear_estructura(ruta_archivo, crear_doctor, NULL);
     if (!lista_doctores) {
         printf(ENOENT_ARCHIVO, ruta_archivo);
@@ -90,7 +89,7 @@ abb_t *guardar_doctores(char *ruta_archivo) {
     while (!lista_esta_vacia(lista_doctores)) {
         doctor_t *doctor = lista_borrar_primero(lista_doctores);
         abb_guardar(doctores, doctor->nombre, doctor);
-        crear_especialidad(strcmp, doctor->especialidad);
+        crear_especialidad(strcmp, doctor->especialidad, especialidades);
         hash_guardar(especialidades, doctor->especialidad);
     }
     lista_destruir(lista_doctores, NULL);
