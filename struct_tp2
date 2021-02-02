@@ -1,33 +1,45 @@
-#include <stdlib.h>
-#include "csv.h"
-#include "mensajes.h"
+#include "struct_tp2.h"
 
-typedef struct paciente {
+
+int cmp_anio_ingreso(const void *paciente_1, const void *paciente_2) {
+    paciente_t *paciente_1 = paciente_1;
+    paciente_t *paciente_2 = paciente_2;
+    if (paciente_1->anio > paciente_2->anio) return 1;
+    
+    else if (paciente_1->anio < paciente_2->anio) return -1;
+    
+    else return 0;
+}
+
+struct paciente {
     char *nombre;
     int *anio;
-} paciente_t;
+};
 
-typedef struct doctor {
+struct doctor {
     char *nombre;
     char *especialidad;
-    int *atendidos;
-} doctor_t;
+    size_t *atendidos;
+};
 
-typedef struct especialidad {
+struct especialidad {
     char *nombre;
     cola_t *urgentes;
     heap_t *regulares;
     size_t en_espera;
-} especialidad_t;
-
+};
 
 paciente_t *crear_paciente(char **campos, void *extra) {
     paciente_t *paciente = malloc(sizeof(paciente_t));
     if (!paciente) return NULL;
+    char *eptr;
+    long anio = strtol(campos[1], &eptr, 10);
+    if (anio == 0) printf(ENOENT_ANIO, campos[1])
     paciente->nombre = strdup(campos[0]);
-    paciente->anio = campos[1];
+    paciente->anio = (int) anio;
     return paciente;
 }
+
 
 doctor_t *crear_doctor(char **campos, void *extra) {
     doctor_t *doctor = malloc(sizeof(doctor_t));
@@ -75,12 +87,11 @@ hash_t *guardar_pacientes(char *ruta_archivo) {
     return pacientes;
 }
 
-abb_t *guardar_doctores(char *ruta_archivo) {
+abb_t *guardar_doctores(char *ruta_archivo, hash_t *especialidades, cmp_func_t comparar) {
     
     abb_t *doctores = abb_crear(strcmp, destruir_doctor);
     if (!doctores) return NULL;
 
-    hash_t *especialidades = hash_crear()
     lista_t *lista_doctores = csv_crear_estructura(ruta_archivo, crear_doctor, NULL);
     if (!lista_doctores) {
         printf(ENOENT_ARCHIVO, ruta_archivo);
@@ -89,7 +100,7 @@ abb_t *guardar_doctores(char *ruta_archivo) {
     while (!lista_esta_vacia(lista_doctores)) {
         doctor_t *doctor = lista_borrar_primero(lista_doctores);
         abb_guardar(doctores, doctor->nombre, doctor);
-        crear_especialidad(strcmp, doctor->especialidad);
+        crear_especialidad(comparar, doctor->especialidad);
         hash_guardar(especialidades, doctor->especialidad);
     }
     lista_destruir(lista_doctores, NULL);
