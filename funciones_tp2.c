@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include "mensajes.h"
-#include <stdlib.h>
 #include "funciones_tp2.h"
 
 #define REGULAR "REGULAR"
