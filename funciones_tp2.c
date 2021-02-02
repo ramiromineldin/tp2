@@ -47,3 +47,20 @@ void atender_siguiente_paciente(abb_t *doctores, hash_t *pacientes, hash_t *espe
     destruir_paciente(paciente);
 
 }
+
+/* visitar */
+bool imprimir_informes(const char *nombre_doctor, void *doctor, void *extra, size_t *cant) {
+    doctor_t *doctor = doctor;
+    if (strcmp(nombre_doctor, extra) != 0) {
+        *cant++;
+        printf(INFORME_DOCTOR,*cant, nombre_doctor, doctor->especialidad, doctor->atendidos)
+        return true
+    }
+    return false
+}
+
+void guardar_informes(abb_t *doctores, const char **parametros) {
+    printf(DOCTORES_SISTEMA, abb_cantidad(doctores));
+    size_t cant = 0
+    abb_in_order(doctores, imprimir_informes, parametros[0], parametros[1], &cant);
+}
