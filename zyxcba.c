@@ -14,10 +14,10 @@ bool validar_cantidad_parametros (char** parametros, size_t cant) {
 	while (parametros[contados]) {
 		contados++;
 	}
-	return contados = cant;
+	return (contados = cant);
 }
 
-void procesar_comando(const char* comando, const char** parametros, abb_t *doctores, hash_t *pacientes, hash_t *especialidades) {
+void procesar_comando(const char* comando, char** parametros, abb_t *doctores, hash_t *pacientes, hash_t *especialidades) {
 	if (strcmp(comando, COMANDO_PEDIR_TURNO) == 0) {
 		if (!validar_cantidad_parametros(parametros, 3)) printf(ENOENT_PARAMS, comando);
 		else pedir_turno(pacientes, especialidades, parametros);
@@ -30,7 +30,7 @@ void procesar_comando(const char* comando, const char** parametros, abb_t *docto
 	} 
 	else if (strcmp(comando, COMANDO_INFORME) == 0) {
 		if (!validar_cantidad_parametros(parametros, 2)) printf(ENOENT_PARAMS, comando);
-
+		else guardar_informes(doctores, parametros);
 
 	} 
 	else {
@@ -57,14 +57,24 @@ void procesar_entrada(abb_t *doctores, hash_t *pacientes, hash_t *especialidades
 			continue;	
 		}
 		char** parametros = split(campos[1], ',');
-		procesar_comando(campos[0], parametros);
+		procesar_comando(campos[0], parametros, doctores, pacientes, especialidades);
 		free_strv(parametros);
 		free_strv(campos);
 	}
 	free(linea);
 }
 
-
+int cmp (const void* a, const void* b) {
+	int *izq = (int*)a; 
+	int *der = (int*)b;
+	if (*izq < *der) {
+		return -1; 
+	}
+	else if (*izq > *der) {
+		return 1; 
+	}
+	return 0; 
+}
 
 int main(int argc, char** argv) {
 	if (argc != 3) {
@@ -73,12 +83,12 @@ int main(int argc, char** argv) {
 	}
 	hash_t *especialidades = hash_crear(destruir_especialidad);
 	if (!especialidades) return 1;
-	abb_t *doctores = guardar_doctores(argv[0], especialidades, cmp_anio_ingreso);
-	if (!doctores) return 1
+	abb_t *doctores = guardar_doctores(argv[0], especialidades, cmp);
+	if (!doctores) return 1;
 	hash_t *pacientes = guardar_pacientes(argv[1]);
 	if (!pacientes) return 1;
 
-	procesar_entrada(docores, pacientes, especialidades);
+	procesar_entrada(doctores, pacientes, especialidades);
 
 	hash_destruir(especialidades);
 	abb_destruir(doctores);
@@ -86,3 +96,4 @@ int main(int argc, char** argv) {
 	
 	return 0;
 }
+
