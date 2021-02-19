@@ -61,7 +61,7 @@ float factor_redimension(size_t cantidad, size_t capacidad) {
     float factor = (float) cantidad / (float) capacidad;
     return factor;
 }
-void redimensionar(hash_t* hash, size_t capacidad) {
+void redimensionar_hash(hash_t* hash, size_t capacidad) {
     campo_t *tabla_nueva = malloc(capacidad * sizeof(campo_t)), *tabla_aux;
     if(!tabla_nueva) return;
    	size_t i = 0, j = 0;
@@ -116,7 +116,7 @@ hash_t *hash_crear(hash_destruir_dato_t destruir_dato) {
 
 bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
 	if (factor_redimension(hash->cantidad + hash->cantidad_borrados, hash->capacidad) > FACTOR_REDIM) {
-    	redimensionar(hash, 2 * hash->capacidad);
+    	redimensionar_hash(hash, 2 * hash->capacidad);
     }
     size_t hash_index = fnv_hashing(clave) % hash->capacidad; 
     if (calcular_index(hash, clave, &hash_index)) { 
@@ -134,7 +134,7 @@ bool hash_guardar(hash_t *hash, const char *clave, void *dato) {
 
 void *hash_borrar(hash_t *hash, const char *clave) {
 	if (factor_redimension(hash->cantidad + hash->cantidad_borrados, hash->capacidad) > FACTOR_REDIM) {
-    	redimensionar(hash, hash->capacidad / 2);
+    	redimensionar_hash(hash, hash->capacidad / 2);
     }
 	size_t hash_index = fnv_hashing(clave) % hash->capacidad; 
 	while(hash->tabla[hash_index].estado != VACIO) {
