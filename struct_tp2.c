@@ -26,10 +26,14 @@ struct especialidad {
 void* crear_paciente(char **campos, void *extra) {
     paciente_t *paciente = malloc(sizeof(paciente_t));
     if (!paciente) return NULL;
+    
     char *eptr;
     long anio = strtol(campos[1], &eptr, 10);
     if (anio == 0) printf(ENOENT_ANIO, campos[1]);
+
     paciente->nombre = strdup(campos[0]);
+    if (!paciente->nombre) return NULL;
+
     paciente->anio = (int*) anio;
     return paciente;
 }
@@ -38,8 +42,13 @@ void* crear_paciente(char **campos, void *extra) {
 void* crear_doctor(char** campos, void *extra) {
     doctor_t *doctor = malloc(sizeof(doctor_t));
     if (!doctor) return NULL;
+
     doctor->nombre = strdup(campos[0]);
+    if (!doctor->nombre) return NULL;
+
     doctor->especialidad = strdup(campos[1]);
+    if (!doctor->especialidad) return NULL;
+
     doctor->atendidos = 0;
     return doctor;
 }
