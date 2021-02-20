@@ -1,4 +1,5 @@
 #include "abb.h"
+#include "abb.h"
 #include "pila.h"
 #include <stdio.h>
 #include <string.h>
@@ -245,20 +246,21 @@ void abb_destruir(abb_t *arbol) {
 /* *****************************************************************
  *                    PRIMITIVA DEL ITERADOR INTERNO
  * *****************************************************************/
-void abb_iterar(nodo_abb_t* nodo, bool visitar(const char*, void*, void*), void *extra, bool* stop) {
+void abb_iterar(nodo_abb_t* nodo, bool visitar(const char*, void*, void*, size_t*), void *extra, bool* stop, void* contador) {
     if (!nodo || !(*stop)) {
         return;
     }
-    abb_iterar(nodo->izq, visitar, extra, stop);
-    if (!(*stop) || !(visitar(nodo->clave, nodo->dato, extra))) {
+    abb_iterar(nodo->izq, visitar, extra, stop, contador);
+    if (!(*stop) || !(visitar(nodo->clave, nodo->dato, extra, contador))) {
         *stop = false;
         return;
     }
-    abb_iterar(nodo->der, visitar, extra, stop);
+    abb_iterar(nodo->der, visitar, extra, stop, contador);
 }
-void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra) {
-    bool stop = true;
-    abb_iterar(arbol->raiz, visitar, extra, &stop);
+void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *, size_t*), void *extra_empezar, void *extra_terminar, size_t* contador) {
+    bool stop = true; 
+    nodo_abb_t* nodo_aux = buscar_nodo(arbol->comparar, arbol->raiz, extra_empezar);
+    abb_iterar(nodo_aux, visitar, extra_terminar, &stop, contador);
 }
 /* *****************************************************************
  *                    PRIMITIVAS DEL ITERADOR EXTERNO
@@ -314,4 +316,3 @@ void abb_iter_in_destruir(abb_iter_t* iter) {
 	pila_destruir(iter->pila);
 	free(iter);
 }
-
