@@ -58,7 +58,7 @@ void abb_destruir(abb_t *arbol);
 //Itera la lista. 
 //Se recibe la funcion que se debe aplicar como parametro.
 //Post: Se itero la lista y devolvio lo que la funcion visitar solicitaba. 
-void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *), void *extra);
+void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *, size_t *), void *extra, void*extra2, size_t* extra3);
 
 /* *****************************************************************
  *                    PRIMITIVAS DEL ITERADOR EXTERNO
