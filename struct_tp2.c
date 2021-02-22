@@ -1,3 +1,4 @@
+
 #include "struct_tp2.h"
 #include <stdio.h>
 #include "csv.h"
@@ -100,18 +101,18 @@ abb_t *guardar_doctores(char *ruta_archivo, hash_t *especialidades, cmp_func_t c
         printf(ENOENT_ARCHIVO, ruta_archivo);
         return NULL;
     }
-    while (!lista_esta_vacia(lista_doctores)) {
+   	while (!lista_esta_vacia(lista_doctores)) {
         doctor_t *doctor = lista_borrar_primero(lista_doctores);
         abb_guardar(doctores, doctor->nombre, doctor);
-        crear_especialidad(comparar, doctor->especialidad);
-        hash_guardar(especialidades, doctor->especialidad, doctor->especialidad);
+        especialidad_t* especialidad = crear_especialidad(comparar, doctor->especialidad);
+        hash_guardar(especialidades, doctor->especialidad, especialidad);
     }
     lista_destruir(lista_doctores, NULL);
     return doctores;
 }
 
 void destruir_paciente(void *paciente) {
-    paciente_t *paci = paciente;
+   	paciente_t *paci = paciente;
     free(paci->nombre);
     free(paci);
 }
@@ -129,4 +130,3 @@ void destruir_doctor(void *doctor) {
     free(doc->especialidad);
     free(doc);
 }
-
