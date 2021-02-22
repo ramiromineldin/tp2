@@ -26,21 +26,20 @@ struct especialidad {
 void pedir_turno(hash_t *pacientes, hash_t *especialidades, char **parametros) {
     if (!hash_pertenece(pacientes, parametros[0])) printf(ENOENT_PACIENTE, parametros[0]);
     
-    else if (!hash_pertenece(especialidades, parametros[1])) printf(ENOENT_ESPECIALIDAD, parametros[1]);
+   else if (!hash_pertenece(especialidades, parametros[1])) printf(ENOENT_ESPECIALIDAD, parametros[1]);
 
     else if (strcmp(parametros[2], REGULAR) != 0 && strcmp(parametros[2], URGENTE) != 0) printf(ENOENT_URGENCIA, parametros[2]);
 
     else {
         especialidad_t *especialidad = hash_obtener(especialidades, parametros[1]);
         paciente_t *paciente = hash_obtener(pacientes, parametros[0]);
+
         if (strcmp(parametros[2], REGULAR) == 0) heap_encolar(especialidad->regulares, paciente);
-        
-        else {
-            cola_encolar(especialidad->urgentes, paciente);
-        }
+        else cola_encolar(especialidad->urgentes, paciente);
+
         especialidad->en_espera++;
         printf(PACIENTE_ENCOLADO, paciente->nombre);
-        printf(CANT_PACIENTES_ENCOLADOS,*(size_t*) especialidad->en_espera, especialidad->nombre);
+        printf(CANT_PACIENTES_ENCOLADOS, especialidad->en_espera, especialidad->nombre);
     }
 }
 
@@ -89,3 +88,4 @@ void guardar_informes(abb_t *doctores, char **parametros) {
     }
     abb_in_order(doctores, imprimir_informes, parametros[0], parametros[1], &cant);
 }
+
