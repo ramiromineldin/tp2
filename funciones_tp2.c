@@ -45,26 +45,29 @@ void pedir_turno(hash_t *pacientes, hash_t *especialidades, char **parametros) {
 }
 
 void atender_siguiente_paciente(abb_t *doctores, hash_t *pacientes, hash_t *especialidades, char **parametros) {
-    if (!abb_pertenece(doctores, parametros[0])) printf(ENOENT_DOCTOR, parametros[0]);
+    if (!abb_pertenece(doctores, parametros[0])) {
+        printf(ENOENT_DOCTOR, parametros[0]);
+        return;
+    }
 
     doctor_t *doctor = abb_obtener(doctores, parametros[0]);
     especialidad_t *especialidad = hash_obtener(especialidades, doctor->especialidad);
     if (especialidad->en_espera == 0) printf(SIN_PACIENTES);
-    paciente_t *paciente;
+    paciente_t *paciente = NULL;
     if (!cola_esta_vacia(especialidad->urgentes)) {
         paciente = cola_desencolar(especialidad->urgentes);
     }
-    else {
+    else if (!heap_esta_vacio(especialidad->regulares)) {
         paciente = heap_desencolar(especialidad->regulares);
     }
-    
-    printf(PACIENTE_ATENDIDO, paciente->nombre);
-    especialidad->en_espera--;
-    printf(CANT_PACIENTES_ENCOLADOS, especialidad->en_espera, doctor->especialidad);    
-    doctor->atendidos++;
-    hash_borrar(pacientes, paciente->nombre);
-    destruir_paciente(paciente);
-
+    if (paciente) {
+        printf(PACIENTE_ATENDIDO, paciente->nombre);
+        especialidad->en_espera--;
+        printf(CANT_PACIENTES_ENCOLADOS, especialidad->en_espera, doctor->especialidad);    
+        doctor->atendidos++;
+        hash_borrar(pacientes, paciente->nombre);
+        destruir_paciente(paciente);
+    }
 }
 
 /* visitar */
@@ -81,6 +84,8 @@ bool imprimir_informes(const char *nombre_doctor, void *doctor, void *extra, siz
 void guardar_informes(abb_t *doctores, char **parametros) {
     printf(DOCTORES_SISTEMA, abb_cantidad(doctores));
     size_t cant = 0;
+    if (abb_cantidad(doctores) == 0) {
+        return;
+    }
     abb_in_order(doctores, imprimir_informes, parametros[0], parametros[1], &cant);
 }
-
