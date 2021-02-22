@@ -1,10 +1,9 @@
-
+#include "funciones_tp2.h"
 #include "struct_tp2.h"
-#include <stdio.h>
-#include "csv.h"
 #include <string.h>
 
-
+#define REGULAR "REGULAR"
+#define URGENTE "URGENTE"
 struct paciente {
     char *nombre;
     int *anio;
@@ -24,109 +23,68 @@ struct especialidad {
 };
 
 
-void* crear_paciente(char **campos, void *extra) {
-    paciente_t *paciente = malloc(sizeof(paciente_t));
-    if (!paciente) return NULL;
+void pedir_turno(hash_t *pacientes, hash_t *especialidades, char **parametros) {
+    if (!hash_pertenece(pacientes, parametros[0])) printf(ENOENT_PACIENTE, parametros[0]);
     
-    char *eptr;
-    long anio = strtol(campos[1], &eptr, 10);
-    if (anio == 0) printf(ENOENT_ANIO, campos[1]);
+   else if (!hash_pertenece(especialidades, parametros[1])) printf(ENOENT_ESPECIALIDAD, parametros[1]);
 
-    paciente->nombre = strdup(campos[0]);
-    if (!paciente->nombre) return NULL;
+    else if (strcmp(parametros[2], REGULAR) != 0 && strcmp(parametros[2], URGENTE) != 0) printf(ENOENT_URGENCIA, parametros[2]);
 
-    paciente->anio = (int*) anio;
-    return paciente;
-}
+    else {
+        especialidad_t *especialidad = hash_obtener(especialidades, parametros[1]);
+        paciente_t *paciente = hash_obtener(pacientes, parametros[0]);
 
+        if (strcmp(parametros[2], REGULAR) == 0) heap_encolar(especialidad->regulares, paciente);
+        else cola_encolar(especialidad->urgentes, paciente);
 
-void* crear_doctor(char** campos, void *extra) {
-    doctor_t *doctor = malloc(sizeof(doctor_t));
-    if (!doctor) return NULL;
-
-    doctor->nombre = strdup(campos[0]);
-    if (!doctor->nombre) return NULL;
-
-    doctor->especialidad = strdup(campos[1]);
-    if (!doctor->especialidad) return NULL;
-
-    doctor->atendidos = 0;
-    return doctor;
-}
-
-especialidad_t *crear_especialidad(cmp_func_t comparar, char *nombre) {
-    especialidad_t *especialidad = malloc(sizeof(especialidad_t));
-    if (!especialidad) return NULL;
-    
-    cola_t *urgentes = cola_crear();
-    heap_t *regulares = heap_crear(comparar);
-
-    if (!urgentes) {
-        if (regulares) heap_destruir(regulares, NULL);
-        return NULL;
+        especialidad->en_espera++;
+        printf(PACIENTE_ENCOLADO, paciente->nombre);
+        printf(CANT_PACIENTES_ENCOLADOS, especialidad->en_espera, especialidad->nombre);
     }
-    else if (!regulares) {
-        if (urgentes) cola_destruir(urgentes, NULL);
-        return NULL;
-    }
-    especialidad->urgentes = urgentes;
-    especialidad->regulares = regulares;
-    return especialidad;
 }
 
-hash_t *guardar_pacientes(char *ruta_archivo) {
-    hash_t *pacientes = hash_crear(destruir_paciente);
-    if (!pacientes) return NULL;
-    
-    lista_t* lista_pacientes = csv_crear_estructura(ruta_archivo, crear_paciente, NULL);
-    if (!lista_pacientes) {
-        printf(ENOENT_ARCHIVO, ruta_archivo);
-        return NULL;
+void atender_siguiente_paciente(abb_t *doctores, hash_t *pacientes, hash_t *especialidades, char **parametros) {
+    if (!abb_pertenece(doctores, parametros[0])) {
+        printf(ENOENT_DOCTOR, parametros[0]);
+        return;
     }
-    while (!lista_esta_vacia(lista_pacientes)) {
-        paciente_t *paciente = lista_borrar_primero(lista_pacientes);
-        hash_guardar(pacientes, paciente->nombre, paciente);
+
+    doctor_t *doctor = abb_obtener(doctores, parametros[0]);
+    especialidad_t *especialidad = hash_obtener(especialidades, doctor->especialidad);
+    if (especialidad->en_espera == 0) printf(SIN_PACIENTES);
+    paciente_t *paciente = NULL;
+    if (!cola_esta_vacia(especialidad->urgentes)) {
+        paciente = cola_desencolar(especialidad->urgentes);
     }
-    lista_destruir(lista_pacientes, NULL);
-    return pacientes;
+    else if (!heap_esta_vacio(especialidad->regulares)) {
+        paciente = heap_desencolar(especialidad->regulares);
+    }
+    if (paciente) {
+        printf(PACIENTE_ATENDIDO, paciente->nombre);
+        especialidad->en_espera--;
+        printf(CANT_PACIENTES_ENCOLADOS, especialidad->en_espera, doctor->especialidad);    
+        doctor->atendidos++;
+        hash_borrar(pacientes, paciente->nombre);
+        destruir_paciente(paciente);
+    }
 }
 
-abb_t *guardar_doctores(char *ruta_archivo, hash_t *especialidades, cmp_func_t comparar) {
-    
-    abb_t *doctores = abb_crear(strcmp, destruir_doctor);
-    if (!doctores) return NULL;
-
-    lista_t *lista_doctores = csv_crear_estructura(ruta_archivo, crear_doctor, NULL);
-    if (!lista_doctores) {
-        printf(ENOENT_ARCHIVO, ruta_archivo);
-        return NULL;
+/* visitar */
+bool imprimir_informes(const char *nombre_doctor, void *doctor, void *extra, size_t *cant) {
+    doctor_t *doctor_aux = doctor;
+    if (strcmp(nombre_doctor, extra) != 0) {
+        *cant += 1;
+        printf(INFORME_DOCTOR,*(size_t*)cant, nombre_doctor, doctor_aux->especialidad,*(size_t*)doctor_aux->atendidos);
+        return true;
     }
-   	while (!lista_esta_vacia(lista_doctores)) {
-        doctor_t *doctor = lista_borrar_primero(lista_doctores);
-        abb_guardar(doctores, doctor->nombre, doctor);
-        especialidad_t* especialidad = crear_especialidad(comparar, doctor->especialidad);
-        hash_guardar(especialidades, doctor->especialidad, especialidad);
+    return false;
+}
+
+void guardar_informes(abb_t *doctores, char **parametros) {
+    printf(DOCTORES_SISTEMA, abb_cantidad(doctores));
+    size_t cant = 0;
+    if (abb_cantidad(doctores) == 0) {
+        return;
     }
-    lista_destruir(lista_doctores, NULL);
-    return doctores;
-}
-
-void destruir_paciente(void *paciente) {
-   	paciente_t *paci = paciente;
-    free(paci->nombre);
-    free(paci);
-}
-
-void destruir_especialidad(void *especialidad) {
-    especialidad_t *espe = especialidad;
-    cola_destruir(espe->urgentes, NULL);
-    heap_destruir(espe->regulares, NULL);
-    free(especialidad);
-}
-
-void destruir_doctor(void *doctor) {
-    doctor_t *doc = doctor;
-    free(doc->nombre);
-    free(doc->especialidad);
-    free(doc);
+    abb_in_order(doctores, imprimir_informes, parametros[0], parametros[1], &cant);
 }
