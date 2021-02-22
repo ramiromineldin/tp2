@@ -7,6 +7,23 @@
 #define COMANDO_PEDIR_TURNO "PEDIR_TURNO"
 #define COMANDO_ATENDER "ATENDER_SIGUIENTE"
 #define COMANDO_INFORME "INFORME"
+struct paciente {
+    char *nombre;
+    int *anio;
+};
+
+struct doctor {
+    char *nombre;
+    char *especialidad;
+    size_t *atendidos;
+};
+
+struct especialidad {
+    char *nombre;
+    cola_t *urgentes;
+    heap_t *regulares;
+    size_t en_espera;
+};
 
 
 bool validar_cantidad_parametros (char** parametros, size_t cant) {
@@ -66,13 +83,13 @@ void procesar_entrada(abb_t *doctores, hash_t *pacientes, hash_t *especialidades
 }
 
 int cmp (const void* a, const void* b) {
-	int *izq = (int*)a; 
-	int *der = (int*)b;
-	if (*izq < *der) {
-		return -1; 
-	}
-	else if (*izq > *der) {
+	paciente_t *izq = (paciente_t*) a; 
+	paciente_t *der = (paciente_t*)b;
+	if (izq->anio < der->anio) {
 		return 1; 
+	}
+	else if (izq->anio > der->anio) {
+		return -1; 
 	}
 	return 0; 
 }
@@ -105,5 +122,3 @@ int main(int argc, char** argv) {
 	
 	return 0;
 }
-
-
