@@ -246,7 +246,7 @@ void abb_destruir(abb_t *arbol) {
 /* *****************************************************************
  *                    PRIMITIVA DEL ITERADOR INTERNO
  * *****************************************************************/
-void abb_iterar(nodo_abb_t* nodo, bool visitar(const char*, void*, void*, size_t*), void *extra, bool* stop, void* contador) {
+void abb_iterar(nodo_abb_t* nodo, bool visitar(const char*, void*, const char *, size_t*), const char *extra, bool* stop, void* contador) {
     if (!nodo || !(*stop)) {
         return;
     }
@@ -257,9 +257,9 @@ void abb_iterar(nodo_abb_t* nodo, bool visitar(const char*, void*, void*, size_t
     }
     abb_iterar(nodo->der, visitar, extra, stop, contador);
 }
-void abb_in_order(abb_t *arbol, bool visitar(const char *, void *, void *, size_t*), void *extra_empezar, void *extra_terminar, size_t* contador) {
+void abb_in_order(abb_t *arbol, bool visitar(const char *, void  *, const char *, size_t*), const char *extra_empezar, const char *extra_terminar, size_t* contador) {
     bool stop = true; 
-    nodo_abb_t* nodo_aux = buscar_nodo(arbol->comparar, arbol->raiz, extra_empezar);
+    nodo_abb_t*nodo_aux = buscar_nodo(arbol->comparar, arbol->raiz, extra_empezar); 
     abb_iterar(nodo_aux, visitar, extra_terminar, &stop, contador);
 }
 /* *****************************************************************
