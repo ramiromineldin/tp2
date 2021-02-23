@@ -81,11 +81,35 @@ bool imprimir_informes(const char *nombre_doctor, void *doctor, void *extra, siz
 }
 
 void guardar_informes(abb_t *doctores, char **parametros) {
-    printf(DOCTORES_SISTEMA, abb_cantidad(doctores));
     size_t cant = 0;
+    size_t cant_doctores = 0;
+
     if (abb_cantidad(doctores) == 0) {
-        return;
-    }
-    abb_in_order(doctores, imprimir_informes, parametros[0], parametros[1], &cant);
+        printf(DOCTORES_SISTEMA, cant_doctores);
+       return;
+    } 
+
+    // BUSCAR INICIO Y FINAL
+    abb_iter_t* iter = abb_iter_in_crear(doctores);
+    const char* clave_actual = abb_iter_in_ver_actual(iter);
+    const char* clave_comienzo = clave_actual;
+    const char* clave_final = parametros[1];
+
+    while(!abb_iter_in_al_final(iter)) {
+        clave_actual = abb_iter_in_ver_actual(iter); 
+        if ((strcmp(parametros[0], "\0") != 0) && (strcmp(clave_actual, parametros[0]) <= 0)) {
+            clave_comienzo = clave_actual;
+        }
+        if (strcmp(clave_actual, parametros[1]) <= 0) {
+            clave_final = clave_actual; 
+        }
+        abb_iter_in_avanzar(iter);
+    };
+    abb_iter_in_destruir(iter);
+    printf(DOCTORES_SISTEMA, cant_doctores);
+    if (strcmp(clave_final, clave_comienzo) == 0) return;
+
+    if (strcmp(clave_final, clave_comienzo) >  0) return;
+    abb_in_order(doctores, imprimir_informes, clave_comienzo,clave_final, &cant);
 }
 
