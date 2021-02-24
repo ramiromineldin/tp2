@@ -289,7 +289,11 @@ void abb_in_order(abb_t *arbol, bool visitar(const char *, void  *, void *, size
     }
     else {
         nodo_aux = buscar_nodo_volumen_2(arbol, extra_empezar); 
+        if (strcmp(nodo_aux->clave, extra_empezar) < 0) {
+            nodo_aux = NULL;
+        }
     }
+    
     abb_iterar(nodo_aux, visitar, extra_terminar, &stop, contador);
 }
 /* *****************************************************************
