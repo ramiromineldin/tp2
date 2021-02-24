@@ -271,7 +271,7 @@ void abb_destruir(abb_t *arbol) {
  *                    PRIMITIVA DEL ITERADOR INTERNO
  * *****************************************************************/
 void abb_iterar(nodo_abb_t* nodo, bool visitar(const char*, void*, void *, size_t*), void *extra, bool* stop, void* contador) {
-    if (!nodo || !(*stop)) {
+    if (!nodo || !(*stop) || strcmp(nodo->clave, (char*) extra_iniciar) < 0) {
         return;
     }
     abb_iterar(nodo->izq, visitar, extra, stop, contador);
