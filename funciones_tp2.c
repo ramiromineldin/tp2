@@ -12,7 +12,7 @@ struct paciente {
 struct doctor {
     char *nombre;
     char *especialidad;
-    size_t *atendidos;
+    size_t atendidos;
 };
 
 struct especialidad {
@@ -21,6 +21,7 @@ struct especialidad {
     heap_t *regulares;
     size_t en_espera;
 };
+
 
 
 void pedir_turno(hash_t *pacientes, hash_t *especialidades, char **parametros) {
