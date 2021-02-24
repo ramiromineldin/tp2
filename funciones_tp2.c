@@ -69,15 +69,19 @@ void atender_siguiente_paciente(abb_t *doctores, hash_t *pacientes, hash_t *espe
     }
 }
 
-bool contar_doctores(const char* nombre, void *doctor, void *extra, size_t *cant) {
-    *cant = *cant +1;
-    return true;
+bool contar_doctores(const char* nombre_doctor, void *doctor, void *extra, size_t *cant) {
+    if ((strcmp((char*) extra, "") != 0 && strcmp(nombre_doctor, (char*) extra) <= 0) || strcmp((char*) extra, "") == 0) {
+        *cant = *cant +1;
+        return true;
+    }
+    
+    return false;
 }
 
 /* visitar */
 bool imprimir_informes(const char *nombre_doctor, void *doctor, void *extra, size_t *cant) {
     doctor_t *doctor_aux = doctor;
-    if (strcmp(nombre_doctor, (char*) extra) != 0) {
+    if ((strcmp((char*) extra, "") != 0 && strcmp(nombre_doctor, (char*) extra) <= 0) || strcmp((char*) extra, "") == 0) {
         *cant = *cant + 1;
         printf(INFORME_DOCTOR,*cant, nombre_doctor, doctor_aux->especialidad, doctor_aux->atendidos);
         return true;
