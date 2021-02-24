@@ -80,7 +80,7 @@ bool imprimir_informes(const char *nombre_doctor, void *doctor, void *extra, siz
     return false;
 }
 void guardar_informes(abb_t *doctores, char **parametros) {
-    size_t cant = 0;
+    size_t cant_aux = 0;
     size_t cant_doctores = 0;
 
     if (abb_cantidad(doctores) == 0) {
@@ -93,24 +93,58 @@ void guardar_informes(abb_t *doctores, char **parametros) {
     const char* clave_actual = abb_iter_in_ver_actual(iter);
     const char* clave_comienzo = clave_actual;
     const char* clave_final = parametros[1];
-    bool comienzo = false;
+    bool clave_comienzo_encontrada = false;
+    bool clave_final_encontrada = false;
 
+    //BUSCA EL COMIENZO Y FINAL 
     while(!abb_iter_in_al_final(iter)) {
         clave_actual = abb_iter_in_ver_actual(iter); 
-        if (strcmp(clave_actual, parametros[0]) < 0) {
+        if (!clave_comienzo_encontrada && strcmp(clave_actual, parametros[0]) >=  0) {
             clave_comienzo = clave_actual;
-            comienzo = true;
+            clave_comienzo_encontrada = true;
         }
-        if (comienzo) cant_doctores++;
-        if (strcmp(clave_actual, parametros[1]) < 0) {
-            clave_final = clave_actual; 
+        if (!clave_final_encontrada && strcmp(clave_actual, parametros[1]) <= 0) {
+            clave_final = clave_actual;
+        }
+        if (clave_comienzo_encontrada && !clave_final_encontrada) cant_doctores++;
+        if (strcmp(clave_actual, parametros[1]) >= 0) {
+            clave_final_encontrada = true;
         }
         abb_iter_in_avanzar(iter);
-    }
-    abb_iter_in_destruir(iter);
-    printf(DOCTORES_SISTEMA, cant_doctores);
-    if (strcmp(clave_final, clave_comienzo) == 0) return;
+    } 
+    abb_iter_in_destruir(iter); 
 
-    if (strcmp(clave_final, clave_comienzo) >  0) return;
-    abb_in_order(doctores, imprimir_informes, clave_comienzo,clave_final, &cant);
+    // CASOS BORDES
+     if ((strcmp(clave_comienzo, "\0") != 0) && (strcmp(clave_final, "\0") != 0)) {
+         if (strcmp(clave_final, clave_comienzo) < 0) {
+            cant_doctores = 0;
+            printf(DOCTORES_SISTEMA, cant_doctores);
+            return;
+        }
+        if (strcmp(clave_comienzo, parametros[0]) < 0) {
+            printf(DOCTORES_SISTEMA, cant_doctores);
+            return;
+        }
+    }
+
+    //IMPRIME
+    printf(DOCTORES_SISTEMA, cant_doctores);
+    abb_iter_t* iter2 = abb_iter_in_crear(doctores);
+    clave_actual = abb_iter_in_ver_actual(iter2);
+    bool stop = true; 
+    while(!abb_iter_in_al_final(iter2) && stop) {
+        clave_actual = abb_iter_in_ver_actual(iter2);
+        if ((strcmp(clave_final, "\0") != 0) && (strcmp(clave_actual, clave_final) > 0)) {
+            stop = false;
+            break;
+        }
+        if (strcmp(clave_actual, clave_comienzo) >= 0) {
+            const char *doctor_aux_clave = abb_iter_in_ver_actual(iter2);
+            doctor_t* doctor_aux = abb_obtener(doctores, doctor_aux_clave);
+            cant_aux += 1;
+            printf(INFORME_DOCTOR, cant_aux, doctor_aux->nombre, doctor_aux->especialidad, doctor_aux->atendidos);
+        }
+        abb_iter_in_avanzar(iter2);
+    }
+    abb_iter_in_destruir(iter2);
 }
