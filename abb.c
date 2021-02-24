@@ -50,11 +50,34 @@ void nodo_abb_destruir(nodo_abb_t *nodo) {
     free(nodo->clave);
     free(nodo);
 }
+
 nodo_abb_t* buscar_nodo(abb_comparar_clave_t comparar, nodo_abb_t *nodo, const char *clave) {
     if(!nodo) return NULL;
     if (comparar(nodo->clave, clave) == 0) return nodo;
     else if (comparar(nodo->clave, clave) > 0) return buscar_nodo(comparar, nodo->izq, clave);
     return buscar_nodo(comparar, nodo->der, clave);
+}
+
+nodo_abb_t* wrp_buscar_nodo(abb_comparar_clave_t comparar, nodo_abb_t *nodo, nodo_abb_t *padre, const char *clave) {
+    if (!nodo) return padre;
+    padre = nodo;
+    if (comparar(nodo->clave, clave) == 0) return nodo;
+    else if (comparar(nodo->clave, clave) > 0) return wrp_buscar_nodo(comparar, nodo->izq, padre, clave);
+    return wrp_buscar_nodo(comparar, nodo->der, padre, clave);
+}
+
+nodo_abb_t* buscar_nodo_volumen_2(abb_t* arbol, const char *clave) {
+    if (arbol->comparar(arbol->raiz->clave, clave) == 0) return arbol->raiz;
+    if (arbol->comparar(arbol->raiz->clave, clave) > 0) return wrp_buscar_nodo(arbol->comparar, arbol->raiz->izq, arbol->raiz, clave);
+    return wrp_buscar_nodo(arbol->comparar, arbol->raiz->der, arbol->raiz, clave);
+}
+
+nodo_abb_t* wrp_buscar_primer_nodo(nodo_abb_t* nodo) {
+    if (nodo->izq == NULL) return nodo;
+    return wrp_buscar_primer_nodo(nodo->izq);
+}
+nodo_abb_t* buscar_primer_nodo(abb_t* abb) {
+    return wrp_buscar_primer_nodo(abb->raiz);
 }
 
 nodo_abb_t* buscar_padre(nodo_abb_t *nodo, const char *clave, abb_comparar_clave_t comparar) {
@@ -78,6 +101,7 @@ int cantidad_hijos(nodo_abb_t *nodo) {
     if (!nodo->izq && !nodo->der) return 0;
     return 1;
 }
+
 
 nodo_abb_t* buscar_sucesor(nodo_abb_t *nodo) {
     nodo_abb_t *nodo_actual = nodo;
@@ -257,9 +281,15 @@ void abb_iterar(nodo_abb_t* nodo, bool visitar(const char*, void*, const char *,
     }
     abb_iterar(nodo->der, visitar, extra, stop, contador);
 }
-void abb_in_order(abb_t *arbol, bool visitar(const char *, void  *, const char *, size_t*), const char *extra_empezar, const char *extra_terminar, size_t* contador) {
-    bool stop = true; 
-    nodo_abb_t*nodo_aux = buscar_nodo(arbol->comparar, arbol->raiz, extra_empezar); 
+void abb_in_order(abb_t *arbol, bool visitar(const char *, void  *, void *, size_t*), const char *extra_empezar, const char *extra_terminar, size_t* contador) {
+    bool stop = true;
+    nodo_abb_t* nodo_aux;
+    if (strcmp(extra_empezar, "") == 0) {
+       nodo_aux = buscar_primer_nodo(arbol);
+    }
+    else {
+        nodo_aux = buscar_nodo_volumen_2(arbol, extra_empezar); 
+    }
     abb_iterar(nodo_aux, visitar, extra_terminar, &stop, contador);
 }
 /* *****************************************************************
@@ -316,3 +346,4 @@ void abb_iter_in_destruir(abb_iter_t* iter) {
 	pila_destruir(iter->pila);
 	free(iter);
 }
+
